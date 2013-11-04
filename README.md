@@ -4,6 +4,7 @@ twitter_curl_post
 Shell script to post to twitter using oAuth and curl
 
 usage: post_tweet "your tweet text here"
+
 Things to change: The following variable will have to be change for the script to work.
 
 consumer_key=your_consumer_key
