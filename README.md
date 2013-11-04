@@ -12,4 +12,5 @@ consumer_secret=your_consumer_secret
 oauth_token=your_token
 oauth_secret=your_oauth_secret
 
+
 The above variables will have to be gotton from dev.twitter.com after you create a application.
