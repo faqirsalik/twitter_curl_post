@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Get the latest tweets from your account.
+#
+# This script is based on a solution proposed by Mike Bounds
+#  in the twitter discussion forum: https://dev.twitter.com/discussions/14460
+
+set -o errexit
+tweet="${1}"
+
+string="${1}"
+strlen=${#string}
+encoded=""
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+tweetencode="${encoded}"    # You can either set a return variable (FASTER) 
+
+screen_name=your_username
+tweet_count=1 # the number of tweets you want to retrieve
+consumer_key=your_consumer_key
+consumer_secret=your_consumer_secret
+oauth_token=your_token
+oauth_secret=your_oauth_secret
+
+timestamp=`date +%s`
+nonce=`date +%s%T555555555 | openssl base64 | sed -e s'/[+=/]//g'`
+
+signature_base_string="POST&https%3A%2F%2Fapi.twitter.com%2F1.1%2Fstatuses%2Fupdate.json&oauth_consumer_key%3D${consumer_key}%26oauth_nonce%3D${nonce}%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D${timestamp}%26oauth_token%3D${oauth_token}%26oauth_version%3D1.0%26status%3D${tweetencode}"
+signature_key="${consumer_secret}&${oauth_secret}"
+oauth_signature=`echo -n ${signature_base_string} | openssl dgst -sha1 -hmac ${signature_key} -binary | openssl base64 | sed -e s'/+/%2B/' -e s'/\//%2F/' -e s'/=/%3D/'`
+
+header="Authorization: OAuth oauth_consumer_key=\"${consumer_key}\", oauth_nonce=\"${nonce}\", oauth_signature=\"${oauth_signature}\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"${timestamp}\", oauth_token=\"${oauth_token}\", oauth_version=\"1.0\""
+
+result=`curl --request 'POST' 'https://api.twitter.com/1.1/statuses/update.json' --data "status=$tweet" --header "$header" --verbose` 
+
+echo $result
